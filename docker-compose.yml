@@ -1,21 +1,25 @@
 services:
     # Back-end: API REST Laravel
     tripuai-api:
-        build:
-            context: ./vendor/laravel/sail/runtimes/8.3
-            dockerfile: Dockerfile
-        container_name: tripuai-api
-        ports:
-            - '${APP_PORT:-8000}:80'
-        environment:
-            LARAVEL_SAIL: 1
-            DB_HOST: tripuai-db
-        volumes:
-            - './api:/var/www/html'
-        networks:
-            - tripuai-network
-        depends_on:
-            - tripuai-db
+      image: 'sail-8.3/app'
+      build:
+          context: ./api/vendor/laravel/sail/runtimes/8.3 # Caminho corrigido para dentro de /api
+          dockerfile: Dockerfile
+          args:
+              WWWGROUP: '${WWWGROUP:-1000}'
+      container_name: tripuai-api
+      ports:
+          - '${APP_PORT:-8000}:80'
+      environment:
+          WWWUSER: '${WWWUSER:-1000}'
+          LARAVEL_SAIL: 1
+          DB_HOST: tripuai-db
+      volumes:
+          - './api:/var/www/html'
+      networks:
+          - tripuai-network
+      depends_on:
+          - tripuai-db
 
     # Front-end: Vue.js SPA
     tripuai-web:
