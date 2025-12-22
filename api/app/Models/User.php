@@ -68,4 +68,9 @@ class User extends Authenticatable implements JWTSubject
             'is_admin' => $this->is_admin
         ];
     }
+
+    public function travelRequests()
+    {
+        return $this->hasMany(TravelRequest::class);
+    }
 }

@@ -10,7 +10,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Criar Usuário Comum (Solicitante)
+        // 1. Usuários Fixos (Os teus originais)
         User::create([
             'name' => 'João Solicitante',
             'email' => 'joao@tripuai.com.br',
@@ -18,12 +18,30 @@ class UserSeeder extends Seeder
             'is_admin' => false,
         ]);
 
-        // Criar Usuário Administrador
         User::create([
             'name' => 'Admin TripUAI',
             'email' => 'admin@tripuai.com.br',
             'password' => Hash::make('password'),
             'is_admin' => true,
+        ]);
+
+        // 2. 10 Usuários Comuns com e-mail @tripuai.com.br
+        User::factory(10)->create([
+            'is_admin' => false,
+            'password' => Hash::make('password'),
+            'email' => function () {
+                // Gera um nome de usuário único e concatena o domínio
+                return fake()->unique()->userName() . '@tripuai.com.br';
+            }
+        ]);
+
+        // 3. 1 Novo Admin com e-mail @tripuai.com.br
+        User::factory(1)->create([
+            'is_admin' => true,
+            'password' => Hash::make('password'),
+            'email' => function () {
+                return fake()->unique()->userName() . '@tripuai.com.br';
+            }
         ]);
     }
 }
