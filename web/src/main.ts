@@ -9,10 +9,12 @@ import './style.css'
 
 import App from './App.vue'
 import Login from './views/Login.vue' // Vamos criar esta pasta/arquivo abaixo
+import Dashboard from './views/Dashboard.vue'
 
 const routes = [
   { path: '/login', component: Login },
-  { path: '/', redirect: '/login' }
+  { path: '/', redirect: '/dashboard' },
+  { path: '/dashboard', component: Dashboard }
 ]
 
 const router = createRouter({

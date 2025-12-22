@@ -3,7 +3,7 @@
     <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
       <div class="flex flex-col items-center mb-8">
         <img src="@/assets/logo-tripuai.png" alt="TripUAI" class="w-48 mb-4" />
-        <h2 class="text-2xl font-bold text-neutral-900">Aceder ao Painel</h2>
+        <h2 class="text-2xl font-bold text-neutral-900">Acesso ao Dashboard do TripUAI</h2>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-6">
