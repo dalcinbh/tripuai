@@ -1,5 +1,5 @@
 <template>
-  <div v-if="auth.isInitialLoading" class="min-h-screen flex items-center justify-center">
+  <div v-if="auth.isInitialLoading && !auth.user" class="min-h-screen flex items-center justify-center">
     <p class="text-neutral-500 font-medium">Restaurando sessão...</p>
   </div>
   <div v-else class="min-h-screen bg-neutral-50">

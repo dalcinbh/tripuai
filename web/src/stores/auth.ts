@@ -5,8 +5,15 @@ import api from '../services/api';
 export const useAuthStore = defineStore('auth', () => {
   // 1. Tenta recuperar o user já salvo para evitar o flash de "usuário comum"
   const savedUser = localStorage.getItem('user');
-  
-  const user = ref<any>(savedUser && savedUser !== 'undefined' ? JSON.parse(savedUser) : null);
+  let parsedUser = null;
+  try {
+    parsedUser = savedUser && savedUser !== 'undefined' ? JSON.parse(savedUser) : null;
+  } catch (e) {
+    console.error('Erro ao fazer parse do usuário do localStorage', e);
+    localStorage.removeItem('user');
+  }
+
+  const user = ref<any>(parsedUser);
   const token = ref(localStorage.getItem('token') || '');
   const isInitialLoading = ref(true);
 
