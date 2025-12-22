@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class TravelRequest extends Model
 {
+    use HasFactory;
     const STATUS_SOLICITADO = 'solicitado';
     const STATUS_APROVADO = 'aprovado';
     const STATUS_CANCELADO = 'cancelado';
