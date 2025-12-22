@@ -13,7 +13,7 @@ class TravelRequestController extends Controller
         Gate::authorize('viewAnyTravelRequest', TravelRequest::class);
 
         return TravelRequest::with('user:id,name,email')
-            ->forUser(auth()->user())
+            ->forUser($request->user())
             ->filter($request->all())
             ->latest()
             ->paginate(15);
