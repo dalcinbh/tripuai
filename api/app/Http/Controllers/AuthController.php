@@ -9,7 +9,33 @@ use App\Http\Controllers\Controller;
 class AuthController extends Controller
 {
     /**
-     * Autentica o usuário e retorna o token JWT
+     * @OA\Post(
+     *     path="/api/auth/login",
+     *     tags={"Autenticação"},
+     *     summary="Login do usuário e retorno do token JWT",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"email", "password"},
+     *                 @OA\Property(property="email", type="string", format="email", example="admin@tripuai.com"),
+     *                 @OA\Property(property="password", type="string", format="password", example="password")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login realizado com sucesso",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="access_token", type="string", example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."),
+     *             @OA\Property(property="token_type", type="string", example="bearer"),
+     *             @OA\Property(property="expires_in", type="integer", example=3600),
+     *             @OA\Property(property="user", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Credenciais inválidas")
+     * )
      */
     public function login(Request $request)
     {
@@ -26,7 +52,23 @@ class AuthController extends Controller
     }
 
     /**
-     * Retorna o perfil do usuário logado
+     * @OA\Get(
+     *     path="/api/auth/me",
+     *     tags={"Autenticação"},
+     *     summary="Obter perfil do usuário logado",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Dados do perfil do usuário",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="id", type="integer", example=1),
+     *             @OA\Property(property="name", type="string", example="Admin User"),
+     *             @OA\Property(property="email", type="string", example="admin@tripuai.com")
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Não autenticado")
+     * )
      */
     public function me()
     {
@@ -34,7 +76,18 @@ class AuthController extends Controller
     }
 
     /**
-     * Finaliza a sessão (Invalida o token)
+     * @OA\Post(
+     *     path="/api/auth/logout",
+     *     tags={"Autenticação"},
+     *     summary="Logout do usuário",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Logout realizado com sucesso",
+     *         @OA\JsonContent(@OA\Property(property="message", type="string", example="Logout realizado com sucesso"))
+     *     ),
+     *     @OA\Response(response=401, description="Não autenticado")
+     * )
      */
     public function logout()
     {
