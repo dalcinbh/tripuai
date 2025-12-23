@@ -64,7 +64,7 @@
               <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[25%]">Destino</th>
               <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[20%]">Período</th>
               <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[15%]">Status</th>
-              <th scope="col" v-if="auth.isAdmin" class="px-6 py-4 text-right text-xs font-bold text-neutral-500 uppercase tracking-widest w-[15%]">Ações</th>
+              <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-neutral-500 uppercase tracking-widest w-[15%]">Ações</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-neutral-200 bg-white">
@@ -88,7 +88,7 @@
                   {{ request.status === 'solicitado' ? 'Solicitado' : (request.status === 'aprovado' ? 'Aprovado' : 'Cancelado') }}
                 </span>
               </td>
-              <td v-if="auth.isAdmin" class="px-6 py-4 text-right whitespace-nowrap text-sm font-medium">
+              <td class="px-6 py-4 text-right whitespace-nowrap text-sm font-medium">
                 <div class="flex items-center justify-end gap-3">
                   <button 
                     @click="openViewModal(request)" 
@@ -98,7 +98,7 @@
                     <Eye class="w-5 h-5" />
                   </button>
 
-                  <div class="flex items-center justify-end gap-2 w-[100px]">
+                  <div v-if="auth.isAdmin" class="flex items-center justify-end gap-2 w-[100px]">
                     <template v-if="request.status === 'solicitado'">
                       <span class="text-neutral-200 h-6 border-l border-neutral-200 mx-1"></span>
                       <button 
