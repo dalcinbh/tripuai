@@ -12,6 +12,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        TravelRequest::observe(TravelRequestObserver::class);
+        // TravelRequest::observe(TravelRequestObserver::class);
     }
 }

@@ -2,12 +2,23 @@
 
 namespace App\Services;
 
+use App\Mail\TravelRequestCreated;
+use App\Mail\TravelRequestStatusChanged;
 use App\Models\TravelRequest;
 use App\Models\User;
+use App\Repositories\TravelRequestRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Mail;
 
 class TravelRequestService
 {
+    protected $repository;
+
+    public function __construct(TravelRequestRepository $repository)
+    {
+        $this->repository = $repository;
+    }
+
     /**
      * List travel requests for a user with filters.
      *
@@ -18,11 +29,7 @@ class TravelRequestService
      */
     public function list(User $user, array $filters, int $perPage = 10): LengthAwarePaginator
     {
-        return TravelRequest::with('user:id,name,email')
-            ->forUser($user)
-            ->filter($filters)
-            ->latest()
-            ->paginate($perPage);
+        return $this->repository->list($user, $filters, $perPage);
     }
 
     /**
@@ -34,7 +41,7 @@ class TravelRequestService
      */
     public function create(User $user, array $data): TravelRequest
     {
-        return TravelRequest::create([
+        $travelRequest = TravelRequest::create([
             'user_id'        => $user->id,
             'requester_name' => $data['requester_name'],
             'destination'    => $data['destination'],
@@ -42,6 +49,11 @@ class TravelRequestService
             'return_date'    => $data['return_date'],
             'status'         => TravelRequest::STATUS_SOLICITADO,
         ]);
+
+        // Side effect: Send email
+        Mail::to($user->email)->send(new TravelRequestCreated($travelRequest));
+
+        return $travelRequest;
     }
 
     /**
@@ -53,6 +65,10 @@ class TravelRequestService
     public function approve(TravelRequest $travelRequest): TravelRequest
     {
         $travelRequest->markAsApproved();
+
+        // Side effect: Send email
+        Mail::to($travelRequest->user->email)->send(new TravelRequestStatusChanged($travelRequest));
+
         return $travelRequest;
     }
 
@@ -65,6 +81,10 @@ class TravelRequestService
     public function cancel(TravelRequest $travelRequest): TravelRequest
     {
         $travelRequest->markAsCancelled();
+
+        // Side effect: Send email
+        Mail::to($travelRequest->user->email)->send(new TravelRequestStatusChanged($travelRequest));
+
         return $travelRequest;
     }
 }
