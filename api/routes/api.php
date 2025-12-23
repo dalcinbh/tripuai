@@ -16,6 +16,7 @@ Route::group(['prefix' => 'auth'], function () {
 Route::middleware('auth:api')->group(function () {
 
     Route::get('travel-requests', [TravelRequestController::class, 'viewTravelRequests'])->name('travel-requests.index');
+    Route::post('travel-requests', [TravelRequestController::class, 'createTravelRequest'])->name('travel-requests.create');
 
     Route::prefix('travel-requests/{travelRequest}')->group(function () {
         Route::get('show', [TravelRequestController::class, 'showTravelRequest'])->name('travel-requests.show');

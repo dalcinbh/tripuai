@@ -25,6 +25,13 @@ class TravelRequestPolicy
             : Response::deny('Você não tem permissão para visualizar esta solicitação.');
     }
 
+    public function createTravelRequest(User $user): Response
+    {
+        return !$user->is_admin
+            ? Response::allow()
+            : Response::deny('Apenas usuários comuns podem criar solicitações de viagem.');
+    }
+
     public function approveTravelRequest(User $user): Response
     {
         return $user->is_admin

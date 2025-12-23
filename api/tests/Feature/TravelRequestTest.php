@@ -8,6 +8,33 @@ use Illuminate\Foundation\Testing\RefreshDatabase; // Certifique-se desta import
 
 uses(RefreshDatabase::class);
 
+test('um usuário comum pode criar uma viagem', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+
+    actingAs($user, 'api')
+        ->postJson(route('travel-requests.create'), [
+            'requester_name' => 'Viajante Teste',
+            'destination' => 'Test Destination',
+            'departure_date' => now()->addDay()->format('Y-m-d'),
+            'return_date' => now()->addDays(5)->format('Y-m-d'),
+        ])
+        ->assertStatus(201) // Status de recurso criado
+        ->assertJsonFragment(['message' => 'Viagem solicitada com sucesso!']);
+});
+
+test('um administrador não pode criar uma solicitação de viagem', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+
+    actingAs($admin, 'api')
+        ->postJson(route('travel-requests.create'), [
+            'requester_name' => 'Admin Tentando Criar',
+            'destination' => 'Destino Proibido',
+            'departure_date' => now()->addDay()->format('Y-m-d'),
+            'return_date' => now()->addDays(5)->format('Y-m-d'),
+        ])
+        ->assertStatus(403); // Acesso negado pela Policy
+});
+
 test('usuário comum não pode aprovar ou cancelar viagens (apenas admin)', function () {
     // Criamos os usuários usando as Factories
     $user = User::factory()->create(['is_admin' => false]);
