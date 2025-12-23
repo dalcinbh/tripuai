@@ -28,6 +28,27 @@ class TravelRequestController extends Controller
      *         required=false,
      *         @OA\Schema(type="string", enum={"solicitado", "aprovado", "cancelado"})
      *     ),
+     *     @OA\Parameter(
+     *         name="destination",
+     *         in="query",
+     *         description="Filtrar por destino",
+     *         required=false,
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="start_date",
+     *         in="query",
+     *         description="Data de início (YYYY-MM-DD)",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
+     *     @OA\Parameter(
+     *         name="end_date",
+     *         in="query",
+     *         description="Data de fim (YYYY-MM-DD)",
+     *         required=false,
+     *         @OA\Schema(type="string", format="date")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Lista de solicitações de viagem",

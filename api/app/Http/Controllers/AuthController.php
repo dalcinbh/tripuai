@@ -19,7 +19,7 @@ class AuthController extends Controller
      *             mediaType="application/json",
      *             @OA\Schema(
      *                 required={"email", "password"},
-     *                 @OA\Property(property="email", type="string", format="email", example="admin@tripuai.com"),
+     *                 @OA\Property(property="email", type="string", format="email", example="admin@tripuai.com.br"),
      *                 @OA\Property(property="password", type="string", format="password", example="password")
      *             )
      *         )
@@ -64,7 +64,7 @@ class AuthController extends Controller
      *             type="object",
      *             @OA\Property(property="id", type="integer", example=1),
      *             @OA\Property(property="name", type="string", example="Admin User"),
-     *             @OA\Property(property="email", type="string", example="admin@tripuai.com")
+     *             @OA\Property(property="email", type="string", example="admin@tripuai.com.br")
      *         )
      *     ),
      *     @OA\Response(response=401, description="Não autenticado")

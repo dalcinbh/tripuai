@@ -8,7 +8,7 @@ namespace App\Http\Controllers;
  *      title="TripUAI API",
  *      description="Documentação da API para a Aplicação TripUAI",
  *      @OA\Contact(
- *          email="admin@tripuai.com"
+ *          email="admin@tripuai.com.br"
  *      ),
  *      @OA\License(
  *          name="MIT",

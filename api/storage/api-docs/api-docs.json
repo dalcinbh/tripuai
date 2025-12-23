@@ -4,7 +4,7 @@
         "title": "TripUAI API",
         "description": "Documentação da API para a Aplicação TripUAI",
         "contact": {
-            "email": "admin@tripuai.com"
+            "email": "admin@tripuai.com.br"
         },
         "license": {
             "name": "MIT",
@@ -14,7 +14,7 @@
     },
     "servers": [
         {
-            "url": "http://my-default-host.com",
+            "url": "http://localhost:8000",
             "description": "Servidor da API"
         }
     ],
@@ -39,7 +39,7 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "admin@tripuai.com"
+                                        "example": "admin@tripuai.com.br"
                                     },
                                     "password": {
                                         "type": "string",
@@ -110,7 +110,7 @@
                                         },
                                         "email": {
                                             "type": "string",
-                                            "example": "admin@tripuai.com"
+                                            "example": "admin@tripuai.com.br"
                                         }
                                     },
                                     "type": "object"
@@ -255,6 +255,35 @@
                                 "aprovado",
                                 "cancelado"
                             ]
+                        }
+                    },
+                    {
+                        "name": "destination",
+                        "in": "query",
+                        "description": "Filtrar por destino",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "start_date",
+                        "in": "query",
+                        "description": "Data de início (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "end_date",
+                        "in": "query",
+                        "description": "Data de fim (YYYY-MM-DD)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
                         }
                     }
                 ],
