@@ -1,0 +1,321 @@
+<template>
+  <div v-if="auth.isInitialLoading && !auth.user" class="min-h-screen flex flex-col items-center justify-center bg-neutral-50">
+    <img src="/favicon.ico" class="w-12 h-12 animate-spin mb-4" alt="Carregando..." />
+    <p class="text-neutral-500 font-medium animate-pulse">Restaurando sessão...</p>
+  </div>
+
+  <div v-else class="min-h-screen bg-neutral-50 font-sans">
+    <nav class="bg-white shadow-sm border-b border-neutral-200 sticky top-0 z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <img src="@/assets/logo-tripuai.png" alt="TripUAI" class="h-12 w-auto" />
+        
+        <div class="flex items-center gap-6">
+          <div v-if="auth.user" class="flex items-center gap-3">
+            <span v-if="auth.isAdmin" class="bg-primary-50 text-primary-700 text-[10px] tracking-wider font-bold px-2.5 py-0.5 rounded-full border border-primary-100">
+              ADMINISTRADOR
+            </span>
+            <div class="flex flex-col items-end">
+              <span class="text-neutral-900 text-sm font-semibold leading-none">{{ auth.user?.name }}</span>
+              <span class="text-neutral-500 text-[11px]">{{ auth.user?.email }}</span>
+            </div>
+          </div>
+          <button @click="handleLogout" class="text-secondary-600 hover:text-secondary-700 text-sm font-bold transition-colors">
+            Sair
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div class="mb-8 flex justify-between items-end">
+        <div>
+          <h1 class="text-3xl font-extrabold text-neutral-900 tracking-tight">Solicitações de Viagem</h1>
+          <p class="text-neutral-500 mt-1">Gerencie e acompanhe seus pedidos de deslocamento corporativo.</p>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div :class="{ 'invisible': !loading }" class="flex items-center gap-2 mr-2">
+            <img src="/favicon.ico" class="w-5 h-5 animate-spin" />
+            <span class="text-xs text-neutral-400 font-medium italic">Sincronizando...</span>
+          </div>
+
+          <button 
+            @click="isModalOpen = true"
+            v-if="!auth.isAdmin" 
+            class="bg-primary-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-primary-700 active:transform active:scale-95 transition-all shadow-sm shadow-primary-200 flex items-center gap-2"
+          >
+            <span>+</span> Nova Solicitação
+          </button>
+        </div>
+      </div>
+
+      <TravelFilters @filter="handleFilterChange" />
+
+      <div :class="{ 'invisible': !loading }" class="flex items-center justify-center gap-3 mb-6 h-8">
+        <img src="/favicon.ico" class="w-8 h-8 animate-spin" />
+        <span class="text-neutral-500 font-bold italic text-lg">Aguarde...</span>
+      </div>
+
+      <div class="bg-white shadow-xl shadow-neutral-200/50 rounded-xl overflow-hidden border border-neutral-200">
+        <table class="min-w-full divide-y divide-neutral-200">
+          <thead class="bg-neutral-50">
+            <tr>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[25%]">Solicitante</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[25%]">Destino</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[20%]">Período</th>
+              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[15%]">Status</th>
+              <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-neutral-500 uppercase tracking-widest w-[15%]">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-200 bg-white">
+            <tr v-for="request in requests" :key="request.id" class="hover:bg-neutral-50/80 transition-colors group">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-bold text-neutral-900">{{ request.requester_name || '---' }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap max-w-[200px]">
+                <div class="text-sm text-neutral-600 flex items-center gap-1 overflow-hidden text-ellipsis shadow-none" title="Clique em visualizar para ver o endereço completo">
+                  <MapPin class="w-4 h-4 text-primary-500 flex-shrink-0" />
+                  <span class="truncate">{{ request.destination }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-neutral-500 font-medium">
+                  {{ formatDate(request.departure_date) }} <span class="text-neutral-300 mx-1">→</span> {{ formatDate(request.return_date) }}
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span :class="statusClass(request.status)" class="px-2.5 py-1 text-[10px] font-black rounded-md uppercase tracking-tighter">
+                  {{ request.status === 'solicitado' ? 'Solicitado' : (request.status === 'aprovado' ? 'Aprovado' : 'Cancelado') }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-right whitespace-nowrap text-sm font-medium">
+                <div class="flex items-center justify-end gap-3">
+                  <button 
+                    @click="openViewModal(request)" 
+                    class="text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-1.5 rounded-lg transition-all flex-shrink-0"
+                    title="Ver Detalhes"
+                  >
+                    <Eye class="w-5 h-5" />
+                  </button>
+
+                  <div v-if="auth.isAdmin" class="flex items-center justify-end gap-2 w-[100px]">
+                    <template v-if="request.status === 'solicitado'">
+                      <span class="text-neutral-200 h-6 border-l border-neutral-200 mx-1"></span>
+                      <button 
+                        @click="openConfirm(request, 'approve')" 
+                        class="text-success-600 hover:text-success-700 hover:bg-success-50 p-1.5 rounded-lg transition-all"
+                        title="Aprovar Solicitação"
+                      >
+                        <Check class="w-5 h-5" />
+                      </button>
+                      <button 
+                        @click="openConfirm(request, 'cancel')" 
+                        class="text-secondary-600 hover:text-secondary-700 hover:bg-secondary-50 p-1.5 rounded-lg transition-all"
+                        title="Recusar Solicitação"
+                      >
+                        <X class="w-5 h-5" />
+                      </button>
+                    </template>
+                    
+                    <span v-else class="text-neutral-300 italic text-[10px] font-medium bg-neutral-50 px-2 py-1 rounded w-full text-center">
+                      Concluído
+                    </span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="requests.length === 0 && !loading">
+              <td colspan="5" class="px-6 py-12 text-center text-neutral-400 italic">
+                Nenhuma solicitação encontrada.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <Pagination 
+          :meta="pagination"
+          @change-page="loadRequests"
+        />
+      </div>
+    </main>
+
+    <RequestModal 
+      :is-open="isModalOpen" 
+      @close="isModalOpen = false" 
+      @success="handleSuccess" 
+    />
+
+    <ConfirmModal 
+      :is-open="isConfirmOpen"
+      :title="confirmData.title"
+      :message="confirmData.message"
+      :variant="confirmData.variant"
+      @close="isConfirmOpen = false"
+      @confirm="handleConfirmAction"
+    />
+
+    <ViewDetailsModal
+      :is-open="isViewModalOpen"
+      :request="viewModalRequest"
+      @close="isViewModalOpen = false"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { travelService } from '@/services/travelService';
+import { useRouter } from 'vue-router';
+import { toast } from 'vue3-toastify';
+import RequestModal from '@/components/RequestModal.vue';
+import ConfirmModal from '@/components/ConfirmModal.vue';
+import TravelFilters from '@/components/TravelFilters.vue';
+import Pagination from '@/components/Pagination.vue';
+import ViewDetailsModal from '@/components/ViewDetailsModal.vue';
+import { Eye, Check, X, MapPin } from 'lucide-vue-next';
+
+/** * Tipagem e Estado 
+ */
+interface TravelRequest {
+  id: number;
+  destination: string;
+  departure_date: string;
+  return_date: string;
+  status: 'solicitado' | 'aprovado' | 'cancelado';
+  requester_name: string;
+}
+
+const router = useRouter();
+const auth = useAuthStore();
+const isModalOpen = ref(false);
+const requests = ref<TravelRequest[]>([]);
+const loading = ref(true);
+const currentFilters = ref({});
+const pagination = ref({ 
+  current_page: 1, 
+  last_page: 1, 
+  from: 0, 
+  to: 0, 
+  total: 0 
+});
+
+// Estado para o Modal de Confirmação
+const isConfirmOpen = ref(false);
+const confirmData = ref({ 
+  id: 0, 
+  type: '' as 'approve' | 'cancel', 
+  title: '', 
+  message: '', 
+  variant: 'success' as 'success' | 'danger' 
+});
+
+// Estado para o Modal de Visualização
+const isViewModalOpen = ref(false);
+const viewModalRequest = ref<any>({});
+
+/**
+ * Lógica de Negócio
+ */
+const loadRequests = async (page = 1) => {
+  try {
+    loading.value = true;
+    // Passa os filtros capturados para o serviço + página
+    const response = await travelService.getAll({ ...currentFilters.value, page });
+    requests.value = response.data; 
+    pagination.value = {
+      current_page: response.current_page,
+      last_page: response.last_page,
+      from: response.from,
+      to: response.to,
+      total: response.total
+    };
+  } catch (error) {
+    toast.error('Erro ao carregar pedidos.');
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleFilterChange = (newFilters: any) => {
+  currentFilters.value = newFilters;
+  loadRequests(1); // Reset para página 1 ao filtrar
+};
+
+const handleSuccess = () => {
+  isModalOpen.value = false;
+  loadRequests(pagination.value.current_page); // Recarrega na página atual
+};
+
+const openConfirm = (request: TravelRequest, type: 'approve' | 'cancel') => {
+  confirmData.value = {
+    id: request.id,
+    type: type,
+    title: type === 'approve' ? 'Aprovar Viagem' : 'Cancelar Viagem',
+    message: `Deseja realmente ${type === 'approve' ? 'aprovar' : 'cancelar'} a solicitação para ${request.destination}?`,
+    variant: type === 'approve' ? 'success' : 'danger'
+  };
+  isConfirmOpen.value = true;
+};
+
+const openViewModal = (request: TravelRequest) => {
+  viewModalRequest.value = request;
+  isViewModalOpen.value = true;
+};
+
+const handleConfirmAction = async () => {
+  isConfirmOpen.value = false;
+  if (confirmData.value.type === 'approve') {
+    await approve(confirmData.value.id);
+  } else {
+    await cancel(confirmData.value.id);
+  }
+};
+
+const approve = async (id: number) => {
+  try {
+    await travelService.approve(id);
+    toast.success('Viagem aprovada com sucesso!');
+    await loadRequests(pagination.value.current_page);
+  } catch (e) {
+    toast.error('Erro ao aprovar viagem.');
+  }
+};
+
+const cancel = async (id: number) => {
+  try {
+    await travelService.cancel(id);
+    toast.success('Viagem cancelada.');
+    await loadRequests(pagination.value.current_page);
+  } catch (e) {
+    toast.error('Erro ao cancelar viagem.');
+  }
+};
+
+const handleLogout = () => {
+  auth.logout();
+  router.push('/login');
+};
+
+/**
+ * Formatadores e Helpers de UI
+ */
+const formatDate = (date: string) => {
+  if (!date) return '---';
+  return new Date(date).toLocaleDateString('pt-BR');
+};
+
+const statusClass = (status: string | undefined) => {
+  const base = "border border-current transition-all";
+  switch(status) {
+    case 'aprovado': return `${base} bg-success-50 text-success-600 border-success-200`;
+    case 'cancelado': return `${base} bg-secondary-50 text-secondary-600 border-secondary-200`;
+    case 'solicitado': return `${base} bg-warning-50 text-warning-600 border-warning-200`;
+    default: return 'bg-neutral-100 text-neutral-500 border-neutral-200';
+  }
+};
+
+onMounted(async () => {
+  await auth.getUser(); 
+  loadRequests();
+});
+</script>

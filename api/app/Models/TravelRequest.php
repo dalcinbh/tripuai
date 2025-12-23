@@ -41,8 +41,12 @@ class TravelRequest extends Model
             $q->where('destination', 'like', "%{$destination}%");
         });
 
-        $query->when(isset($filters['start_date'], $filters['end_date']), function ($q) use ($filters) {
-            $q->whereBetween('departure_date', [$filters['start_date'], $filters['end_date']]);
+        $query->when($filters['start_date'] ?? null, function ($q, $date) {
+            $q->whereDate('departure_date', '>=', $date);
+        });
+
+        $query->when($filters['end_date'] ?? null, function ($q, $date) {
+            $q->whereDate('return_date', '<=', $date);
         });
 
         return $query;

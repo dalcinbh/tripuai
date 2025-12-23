@@ -9,29 +9,28 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class TravelRequestStatusChanged extends Mailable
+class TravelRequestCreated extends Mailable
 {
     use Queueable, SerializesModels;
 
     public function __construct(
         public TravelRequest $travelRequest
     ) {
-        // Garante que os dados do usuário estejam disponíveis para a view
+        // Carrega o usuário para garantir acesso ao nome na View
         $this->travelRequest->load('user');
     }
 
     public function envelope(): Envelope
     {
-        $status = strtoupper($this->travelRequest->status);
         return new Envelope(
-            subject: "Pedido {$status}: Viagem para {$this->travelRequest->destination}",
+            subject: "Confirmação: Solicitação de viagem para {$this->travelRequest->destination} criada",
         );
     }
 
     public function content(): Content
     {
         return new Content(
-            view: 'emails.travel-status-updated',
+            view: 'emails.travel-request-created',
         );
     }
 }
