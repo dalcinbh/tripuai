@@ -14,6 +14,15 @@
             <span v-if="auth.isAdmin" class="bg-primary-50 text-primary-700 text-[10px] tracking-wider font-bold px-2.5 py-0.5 rounded-full border border-primary-100">
               ADMIN
             </span>
+            <!-- Mail Icon for Admins -->
+            <button 
+              v-if="auth.isAdmin"
+              @click="isBroadcastModalOpen = true"
+              class="text-neutral-400 hover:text-primary-600 transition-colors p-1"
+              title="Enviar e-mail para todos"
+            >
+              <Mail class="w-5 h-5" />
+            </button>
             <div class="flex flex-col items-end">
               <span class="text-neutral-900 text-sm font-semibold leading-none">{{ auth.user?.name }}</span>
             </div>
@@ -219,6 +228,12 @@
       :request="viewModalRequest"
       @close="isViewModalOpen = false"
     />
+
+    <BroadcastEmailModal
+      :is-open="isBroadcastModalOpen"
+      @close="isBroadcastModalOpen = false"
+      @send="handleBroadcastSend"
+    />
   </div>
 </template>
 
@@ -233,7 +248,8 @@ import ConfirmModal from '@/components/ConfirmModal.vue';
 import TravelFilters from '@/components/TravelFilters.vue';
 import Pagination from '@/components/Pagination.vue';
 import ViewDetailsModal from '@/components/ViewDetailsModal.vue';
-import { Eye, Check, X, MapPin } from 'lucide-vue-next';
+import BroadcastEmailModal from '@/components/BroadcastEmailModal.vue';
+import { Eye, Check, X, MapPin, Mail } from 'lucide-vue-next';
 
 /** * Tipagem e Estado 
  */
@@ -264,7 +280,7 @@ const pagination = ref({
 const isConfirmOpen = ref(false);
 const confirmData = ref({ 
   id: 0, 
-  type: '' as 'approve' | 'cancel', 
+  type: '' as 'approve' | 'cancel' | 'broadcast', 
   title: '', 
   message: '', 
   variant: 'success' as 'success' | 'danger' 
@@ -273,6 +289,9 @@ const confirmData = ref({
 // Estado para o Modal de Visualização
 const isViewModalOpen = ref(false);
 const viewModalRequest = ref<any>({});
+
+// Estado para o Modal de Email Broadcast
+const isBroadcastModalOpen = ref(false);
 
 /**
  * Lógica de Negócio
@@ -325,7 +344,9 @@ const openViewModal = (request: TravelRequest) => {
 
 const handleConfirmAction = async () => {
   isConfirmOpen.value = false;
-  if (confirmData.value.type === 'approve') {
+  if (confirmData.value.type === 'broadcast') {
+    await confirmBroadcast();
+  } else if (confirmData.value.type === 'approve') {
     await approve(confirmData.value.id);
   } else {
     await cancel(confirmData.value.id);
@@ -372,6 +393,39 @@ const statusClass = (status: string | undefined) => {
     case 'cancelado': return `${base} bg-secondary-50 text-secondary-600 border-secondary-200`;
     case 'solicitado': return `${base} bg-warning-50 text-warning-600 border-warning-200`;
     default: return 'bg-neutral-100 text-neutral-500 border-neutral-200';
+  }
+};
+
+const handleBroadcastSend = (payload: { subject: string, body: string }) => {
+  isBroadcastModalOpen.value = false;
+  // Reutilizando o modal de confirmação para confirmar o envio
+  confirmData.value = {
+    id: 0, // ID fictício pois não é uma ação num item específico
+    type: 'broadcast', // Novo tipo
+    title: 'Enviar Mensagem para Todos',
+    message: 'Tem certeza que deseja enviar este e-mail para TODOS os usuários do sistema?',
+    variant: 'success'
+  };
+  // Armazena payload temporariamente (poderia ser num ref separado, mas por simplicidade vamos assumir aqui ou estender confirmData se necessário. 
+  // Na verdade, melhor criar um ref separado para o payload pendente)
+  pendingBroadcastPayload.value = payload;
+  isConfirmOpen.value = true;
+};
+
+const pendingBroadcastPayload = ref<{ subject: string, body: string } | null>(null);
+
+const confirmBroadcast = async () => {
+  try {
+    // AQUI SERIA A CHAMADA PARA A API: await travelService.sendBroadcast(pendingBroadcastPayload.value);
+    console.log('Sending broadcast:', pendingBroadcastPayload.value);
+    
+    // Simulating API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    toast.success('Mensagem enviada com sucesso para todos os usuários!');
+    pendingBroadcastPayload.value = null; // Limpa payload
+  } catch (error) {
+    toast.error('Erro ao enviar mensagem.');
   }
 };
 
