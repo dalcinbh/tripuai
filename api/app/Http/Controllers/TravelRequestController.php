@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTravelRequest;
+use App\Http\Resources\TravelRequestResource;
 use App\Models\TravelRequest;
 use App\Services\TravelRequestService;
 use Illuminate\Http\Request;
@@ -75,7 +76,7 @@ class TravelRequestController extends Controller
     {
         Gate::authorize('viewAnyTravelRequest', TravelRequest::class);
 
-        return $this->service->list($request->user(), $request->all());
+        return TravelRequestResource::collection($this->service->list($request->user(), $request->all()));
     }
 
     /**
@@ -114,10 +115,10 @@ class TravelRequestController extends Controller
 
         $travelRequest = $this->service->create($request->user(), $request->validated());
 
-        return response()->json([
-            'message' => 'Viagem solicitada com sucesso!',
-            'data'    => $travelRequest
-        ], 201);
+        return (new TravelRequestResource($travelRequest))
+            ->additional(['message' => 'Viagem solicitada com sucesso!'])
+            ->response()
+            ->setStatusCode(201);
     }
 
     /**
@@ -150,10 +151,8 @@ class TravelRequestController extends Controller
 
         $this->service->approve($travelRequest);
 
-        return response()->json([
-            'message' => 'Viagem aprovada com sucesso!',
-            'data' => $travelRequest
-        ]);
+        return (new TravelRequestResource($travelRequest))
+            ->additional(['message' => 'Viagem aprovada com sucesso!']);
     }
 
     /**
@@ -187,10 +186,8 @@ class TravelRequestController extends Controller
         try {
             $this->service->cancel($travelRequest);
 
-            return response()->json([
-                'message' => 'Viagem cancelada.',
-                'data' => $travelRequest
-            ]);
+            return (new TravelRequestResource($travelRequest))
+                ->additional(['message' => 'Viagem cancelada.']);
         } catch (\DomainException $e) {
             return response()->json([
                 'message' => $e->getMessage()
@@ -223,6 +220,6 @@ class TravelRequestController extends Controller
     {
         Gate::authorize('viewTravelRequest', $travelRequest);
 
-        return response()->json($travelRequest->load('user'));
+        return new TravelRequestResource($travelRequest->load('user'));
     }
 }
