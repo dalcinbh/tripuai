@@ -50,7 +50,7 @@
                 <td class="px-6 py-4 text-sm text-neutral-600">{{ formatDate(request.start_date) }} - {{ formatDate(request.end_date) }}</td>
                 <td class="px-6 py-4">
                   <span :class="statusClass(request.status)" class="px-2 py-1 text-xs font-bold rounded-full">
-                    {{ request.status.toUpperCase() }}
+                    {{ request.status ? request.status.toUpperCase() : 'N/A' }}
                   </span>
                 </td>
                 <td v-if="auth.isAdmin" class="px-6 py-4 text-right space-x-2">
@@ -101,7 +101,8 @@ const handleSuccess = () => {
 const loadRequests = async () => {
   try {
     loading.value = true;
-    requests.value = await travelService.getAll();
+    const response = await travelService.getAll();
+    requests.value = response.data;
   } catch (error) {
     toast.error('Erro ao carregar pedidos.');
   } finally {
@@ -134,7 +135,8 @@ const handleLogout = () => {
 
 const formatDate = (date: string) => new Date(date).toLocaleDateString('pt-BR');
 
-const statusClass = (status: string) => {
+const statusClass = (status: string | undefined) => {
+  if (!status) return 'bg-neutral-100 text-neutral-500';
   if (status === 'approved') return 'bg-success-100 text-success-700';
   if (status === 'canceled') return 'bg-secondary-100 text-secondary-700';
   return 'bg-warning-100 text-warning-700';
