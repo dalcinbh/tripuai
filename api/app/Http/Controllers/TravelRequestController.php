@@ -2,12 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreTravelRequest;
 use App\Models\TravelRequest;
+use App\Services\TravelRequestService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class TravelRequestController extends Controller
 {
+    protected $service;
+
+    public function __construct(TravelRequestService $service)
+    {
+        $this->service = $service;
+    }
+
     /**
      * @OA\Get(
      *     path="/api/travel-requests",
@@ -66,11 +75,7 @@ class TravelRequestController extends Controller
     {
         Gate::authorize('viewAnyTravelRequest', TravelRequest::class);
 
-        return TravelRequest::with('user:id,name,email')
-            ->forUser($request->user())
-            ->filter($request->all())
-            ->latest()
-            ->paginate(10);
+        return $this->service->list($request->user(), $request->all());
     }
 
     /**
@@ -103,25 +108,11 @@ class TravelRequestController extends Controller
      *     @OA\Response(response=422, description="Erro de validação")
      * )
      */
-    public function createTravelRequest(Request $request)
+    public function createTravelRequest(StoreTravelRequest $request)
     {
         Gate::authorize('createTravelRequest', TravelRequest::class);
 
-        $validated = $request->validate([
-            'requester_name' => 'required|string|max:255', // Campo obrigatório e independente
-            'destination'    => 'required|string|max:255',
-            'departure_date' => 'required|date|after_or_equal:today',
-            'return_date'    => 'required|date|after_or_equal:departure_date',
-        ]);
-
-        $travelRequest = TravelRequest::create([
-            'user_id'        => $request->user()->id, // Dono do registro (quem criou)
-            'requester_name' => $validated['requester_name'], // Nome do viajante real
-            'destination'    => $validated['destination'],
-            'departure_date' => $validated['departure_date'],
-            'return_date'    => $validated['return_date'],
-            'status'         => TravelRequest::STATUS_SOLICITADO,
-        ]);
+        $travelRequest = $this->service->create($request->user(), $request->validated());
 
         return response()->json([
             'message' => 'Viagem solicitada com sucesso!',
@@ -157,7 +148,7 @@ class TravelRequestController extends Controller
     {
         Gate::authorize('approveTravelRequest', TravelRequest::class);
 
-        $travelRequest->markAsApproved();
+        $this->service->approve($travelRequest);
 
         return response()->json([
             'message' => 'Viagem aprovada com sucesso!',
@@ -194,7 +185,7 @@ class TravelRequestController extends Controller
         Gate::authorize('cancelTravelRequest', $travelRequest);
 
         try {
-            $travelRequest->markAsCancelled();
+            $this->service->cancel($travelRequest);
 
             return response()->json([
                 'message' => 'Viagem cancelada.',
