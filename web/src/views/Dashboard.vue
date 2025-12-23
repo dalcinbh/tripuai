@@ -7,7 +7,7 @@
   <div v-else class="min-h-screen bg-neutral-50 font-sans">
     <nav class="bg-white shadow-sm border-b border-neutral-200 sticky top-0 z-10">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <img src="@/assets/logo-tripuai.png" alt="TripUAI" class="h-8 w-auto" />
+        <img src="@/assets/logo-tripuai.png" alt="TripUAI" class="h-12 w-auto" />
         
         <div class="flex items-center gap-6">
           <div v-if="auth.user" class="flex items-center gap-3">
@@ -34,7 +34,7 @@
         </div>
         
         <div class="flex items-center gap-4">
-          <div v-if="loading" class="flex items-center gap-2 mr-2">
+          <div :class="{ 'invisible': !loading }" class="flex items-center gap-2 mr-2">
             <img src="/favicon.ico" class="w-5 h-5 animate-spin" />
             <span class="text-xs text-neutral-400 font-medium italic">Sincronizando...</span>
           </div>
@@ -47,6 +47,13 @@
             <span>+</span> Nova Solicitação
           </button>
         </div>
+      </div>
+
+      <TravelFilters @filter="handleFilterChange" />
+
+      <div :class="{ 'invisible': !loading }" class="flex items-center justify-center gap-3 mb-6 h-8">
+        <img src="/favicon.ico" class="w-8 h-8 animate-spin" />
+        <span class="text-neutral-500 font-bold italic text-lg">Aguarde...</span>
       </div>
 
       <div class="bg-white shadow-xl shadow-neutral-200/50 rounded-xl overflow-hidden border border-neutral-200">
@@ -99,6 +106,10 @@
             </tr>
           </tbody>
         </table>
+        <Pagination 
+          :meta="pagination"
+          @change-page="loadRequests"
+        />
       </div>
     </main>
 
@@ -127,6 +138,8 @@ import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import RequestModal from '@/components/RequestModal.vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
+import TravelFilters from '@/components/TravelFilters.vue';
+import Pagination from '@/components/Pagination.vue';
 
 /** * Tipagem e Estado 
  */
@@ -144,6 +157,14 @@ const auth = useAuthStore();
 const isModalOpen = ref(false);
 const requests = ref<TravelRequest[]>([]);
 const loading = ref(true);
+const currentFilters = ref({});
+const pagination = ref({ 
+  current_page: 1, 
+  last_page: 1, 
+  from: 0, 
+  to: 0, 
+  total: 0 
+});
 
 // Estado para o Modal de Confirmação
 const isConfirmOpen = ref(false);
@@ -158,11 +179,19 @@ const confirmData = ref({
 /**
  * Lógica de Negócio
  */
-const loadRequests = async () => {
+const loadRequests = async (page = 1) => {
   try {
     loading.value = true;
-    const response = await travelService.getAll();
-    requests.value = response.data; // Conserta o erro da imagem (response.data)
+    // Passa os filtros capturados para o serviço + página
+    const response = await travelService.getAll({ ...currentFilters.value, page });
+    requests.value = response.data; 
+    pagination.value = {
+      current_page: response.current_page,
+      last_page: response.last_page,
+      from: response.from,
+      to: response.to,
+      total: response.total
+    };
   } catch (error) {
     toast.error('Erro ao carregar pedidos.');
   } finally {
@@ -170,9 +199,14 @@ const loadRequests = async () => {
   }
 };
 
+const handleFilterChange = (newFilters: any) => {
+  currentFilters.value = newFilters;
+  loadRequests(1); // Reset para página 1 ao filtrar
+};
+
 const handleSuccess = () => {
   isModalOpen.value = false;
-  loadRequests();
+  loadRequests(pagination.value.current_page); // Recarrega na página atual
 };
 
 const openConfirm = (request: TravelRequest, type: 'approve' | 'cancel') => {
@@ -199,7 +233,7 @@ const approve = async (id: number) => {
   try {
     await travelService.approve(id);
     toast.success('Viagem aprovada com sucesso!');
-    await loadRequests();
+    await loadRequests(pagination.value.current_page);
   } catch (e) {
     toast.error('Erro ao aprovar viagem.');
   }
@@ -209,7 +243,7 @@ const cancel = async (id: number) => {
   try {
     await travelService.cancel(id);
     toast.success('Viagem cancelada.');
-    await loadRequests();
+    await loadRequests(pagination.value.current_page);
   } catch (e) {
     toast.error('Erro ao cancelar viagem.');
   }

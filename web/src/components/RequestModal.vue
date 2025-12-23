@@ -55,7 +55,7 @@
           <button 
             type="submit" 
             :disabled="loading"
-            class="w-full bg-primary-600 text-white py-3 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 transition-all shadow-lg shadow-primary-200 flex items-center justify-center gap-2"
+            class="w-full bg-primary-600 text-white py-3 rounded-xl font-bold hover:bg-primary-700 disabled:opacity-50 transition-all shadow-lg shadow-primary-200 flex items-center justify-center gap-2 min-w-[140px]"
           >
             <img v-if="loading" src="/favicon.ico" class="w-5 h-5 animate-spin" />
             {{ loading ? 'Enviando...' : 'Solicitar' }}

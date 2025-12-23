@@ -16,7 +16,7 @@ class TravelRequestController extends Controller
             ->forUser($request->user())
             ->filter($request->all())
             ->latest()
-            ->paginate(15);
+            ->paginate(10);
     }
 
     public function createTravelRequest(Request $request)

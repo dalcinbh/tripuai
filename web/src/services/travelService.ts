@@ -8,8 +8,8 @@ interface CreateTravelData {
 }
 
 export const travelService = {
-  async getAll() {
-    const response = await api.get('/travel-requests');
+  async getAll(params?: any) {
+    const response = await api.get('/travel-requests', { params });
     return response.data;
   },
   async create(data: CreateTravelData) {
