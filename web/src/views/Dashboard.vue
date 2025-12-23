@@ -82,10 +82,10 @@
               </td>
               <td v-if="auth.isAdmin" class="px-6 py-4 text-right whitespace-nowrap text-sm font-medium">
                 <div v-if="request.status === 'solicitado'" class="flex justify-end gap-3">
-                  <button @click="approve(request.id)" class="text-success-600 hover:text-success-700 transition-colors font-bold flex items-center gap-1">
+                  <button @click="openConfirm(request, 'approve')" class="text-success-600 hover:text-success-700 transition-colors font-bold flex items-center gap-1">
                     ✓ Aprovar
                   </button>
-                  <button @click="cancel(request.id)" class="text-secondary-600 hover:text-secondary-700 transition-colors font-bold flex items-center gap-1">
+                  <button @click="openConfirm(request, 'cancel')" class="text-secondary-600 hover:text-secondary-700 transition-colors font-bold flex items-center gap-1">
                     ✕ Recusar
                   </button>
                 </div>
@@ -107,6 +107,15 @@
       @close="isModalOpen = false" 
       @success="handleSuccess" 
     />
+
+    <ConfirmModal 
+      :is-open="isConfirmOpen"
+      :title="confirmData.title"
+      :message="confirmData.message"
+      :variant="confirmData.variant"
+      @close="isConfirmOpen = false"
+      @confirm="handleConfirmAction"
+    />
   </div>
 </template>
 
@@ -117,6 +126,7 @@ import { travelService } from '@/services/travelService';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
 import RequestModal from '@/components/RequestModal.vue';
+import ConfirmModal from '@/components/ConfirmModal.vue';
 
 /** * Tipagem e Estado 
  */
@@ -134,6 +144,16 @@ const auth = useAuthStore();
 const isModalOpen = ref(false);
 const requests = ref<TravelRequest[]>([]);
 const loading = ref(true);
+
+// Estado para o Modal de Confirmação
+const isConfirmOpen = ref(false);
+const confirmData = ref({ 
+  id: 0, 
+  type: '' as 'approve' | 'cancel', 
+  title: '', 
+  message: '', 
+  variant: 'success' as 'success' | 'danger' 
+});
 
 /**
  * Lógica de Negócio
@@ -153,6 +173,26 @@ const loadRequests = async () => {
 const handleSuccess = () => {
   isModalOpen.value = false;
   loadRequests();
+};
+
+const openConfirm = (request: TravelRequest, type: 'approve' | 'cancel') => {
+  confirmData.value = {
+    id: request.id,
+    type: type,
+    title: type === 'approve' ? 'Aprovar Viagem' : 'Cancelar Viagem',
+    message: `Deseja realmente ${type === 'approve' ? 'aprovar' : 'cancelar'} a solicitação para ${request.destination}?`,
+    variant: type === 'approve' ? 'success' : 'danger'
+  };
+  isConfirmOpen.value = true;
+};
+
+const handleConfirmAction = async () => {
+  isConfirmOpen.value = false;
+  if (confirmData.value.type === 'approve') {
+    await approve(confirmData.value.id);
+  } else {
+    await cancel(confirmData.value.id);
+  }
 };
 
 const approve = async (id: number) => {
