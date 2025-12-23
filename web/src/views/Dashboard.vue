@@ -69,142 +69,25 @@
         @change-page="fetchRequests"
       />
 
-      <!-- Mobile Card View (Visible < lg) -->
-      <div class="block lg:hidden space-y-4 mb-6">
-        <div v-for="request in requests" :key="request.id" class="bg-white p-5 rounded-xl shadow-sm border border-neutral-200">
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Solicitante</span>
-              <p class="font-bold text-neutral-900 text-sm">{{ request.requester_name || '---' }}</p>
-            </div>
-            <span :class="statusClass(request.status)" class="px-2 py-1 text-[10px] font-black rounded uppercase">
-              {{ request.status === 'solicitado' ? 'Solicitado' : (request.status === 'aprovado' ? 'Aprovado' : 'Cancelado') }}
-            </span>
-          </div>
+      <!-- Mobile List -->
+      <TravelRequestMobileList
+        :requests="requests"
+        :loading="loading"
+        :is-admin="auth.isAdmin"
+        @view="openViewModal"
+        @approve="(req) => openConfirm(req, 'approve')"
+        @cancel="(req) => openConfirm(req, 'cancel')"
+      />
 
-          <div class="mb-4">
-            <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Destino</span>
-            <div class="flex items-center gap-1 text-sm text-neutral-700 font-medium">
-               <MapPin class="w-4 h-4 text-primary-500 flex-shrink-0" />
-               {{ request.destination }}
-            </div>
-          </div>
-
-          <div class="mb-4">
-            <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Período</span>
-            <p class="text-sm text-neutral-600 font-medium">
-              {{ formatDate(request.departure_date) }} <span class="text-neutral-300 mx-1">→</span> {{ formatDate(request.return_date) }}
-            </p>
-          </div>
-
-          <div class="pt-4 border-t border-neutral-100 flex items-center justify-end gap-3">
-             <button 
-                @click="openViewModal(request)" 
-                class="flex items-center gap-2 px-3 py-2 bg-primary-50 text-primary-700 rounded-lg text-xs font-bold hover:bg-primary-100 transition-colors"
-             >
-               <Eye class="w-4 h-4" /> Detalhes
-             </button>
-
-             <template v-if="auth.isAdmin && request.status === 'solicitado'">
-               <button 
-                  @click="openConfirm(request, 'approve')" 
-                  class="flex items-center gap-2 px-3 py-2 bg-success-50 text-success-700 rounded-lg text-xs font-bold hover:bg-success-100 transition-colors"
-                >
-                  <Check class="w-4 h-4" /> Aprovar
-               </button>
-               <button 
-                  @click="openConfirm(request, 'cancel')" 
-                  class="flex items-center gap-2 px-3 py-2 bg-secondary-50 text-secondary-700 rounded-lg text-xs font-bold hover:bg-secondary-100 transition-colors"
-                >
-                  <X class="w-4 h-4" /> Recusar
-               </button>
-             </template>
-          </div>
-        </div>
-        
-        <div v-if="requests.length === 0 && !loading" class="text-center py-8 text-neutral-400 italic bg-white rounded-xl border border-neutral-200">
-           Nenhuma solicitação encontrada.
-        </div>
-      </div>
-
-      <!-- Desktop Table View (Visible >= lg) -->
-      <div class="hidden lg:block bg-white shadow-xl shadow-neutral-200/50 rounded-xl overflow-hidden border border-neutral-200">
-        <table class="min-w-full divide-y divide-neutral-200">
-          <thead class="bg-neutral-50">
-            <tr>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[25%]">Solicitante</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[25%]">Destino</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[20%]">Período</th>
-              <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-widest w-[15%]">Status</th>
-              <th scope="col" class="px-6 py-4 text-right text-xs font-bold text-neutral-500 uppercase tracking-widest w-[15%]">Ações</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-neutral-200 bg-white">
-            <tr v-for="request in requests" :key="request.id" class="hover:bg-neutral-50/80 transition-colors group">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-bold text-neutral-900">{{ request.requester_name || '---' }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap max-w-[200px]">
-                <div class="text-sm text-neutral-600 flex items-center gap-1 overflow-hidden text-ellipsis shadow-none" title="Clique em visualizar para ver o endereço completo">
-                  <MapPin class="w-4 h-4 text-primary-500 flex-shrink-0" />
-                  <span class="truncate">{{ request.destination }}</span>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-neutral-500 font-medium">
-                  {{ formatDate(request.departure_date) }} <span class="text-neutral-300 mx-1">→</span> {{ formatDate(request.return_date) }}
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span :class="statusClass(request.status)" class="px-2.5 py-1 text-[10px] font-black rounded-md uppercase tracking-tighter">
-                  {{ request.status === 'solicitado' ? 'Solicitado' : (request.status === 'aprovado' ? 'Aprovado' : 'Cancelado') }}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-right whitespace-nowrap text-sm font-medium">
-                <div class="flex items-center justify-end gap-3">
-                  <button 
-                    @click="openViewModal(request)" 
-                    class="text-primary-600 hover:text-primary-700 hover:bg-primary-50 p-1.5 rounded-lg transition-all flex-shrink-0"
-                    title="Ver Detalhes"
-                  >
-                    <Eye class="w-5 h-5" />
-                  </button>
-
-                  <div v-if="auth.isAdmin" class="flex items-center justify-end gap-2 w-[100px]">
-                    <template v-if="request.status === 'solicitado'">
-                      <span class="text-neutral-200 h-6 border-l border-neutral-200 mx-1"></span>
-                      <button 
-                        @click="openConfirm(request, 'approve')" 
-                        class="text-success-600 hover:text-success-700 hover:bg-success-50 p-1.5 rounded-lg transition-all"
-                        title="Aprovar Solicitação"
-                      >
-                        <Check class="w-5 h-5" />
-                      </button>
-                      <button 
-                        @click="openConfirm(request, 'cancel')" 
-                        class="text-secondary-600 hover:text-secondary-700 hover:bg-secondary-50 p-1.5 rounded-lg transition-all"
-                        title="Recusar Solicitação"
-                      >
-                        <X class="w-5 h-5" />
-                      </button>
-                    </template>
-                    
-                    <span v-else class="text-neutral-300 italic text-[10px] font-medium bg-neutral-50 px-2 py-1 rounded w-full text-center">
-                      Concluído
-                    </span>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr v-if="requests.length === 0 && !loading">
-              <td colspan="5" class="px-6 py-12 text-center text-neutral-400 italic">
-                Nenhuma solicitação encontrada.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+      <!-- Desktop Table -->
+      <TravelRequestTable 
+        :requests="requests"
+        :loading="loading"
+        :is-admin="auth.isAdmin"
+        @view="openViewModal"
+        @approve="(req) => openConfirm(req, 'approve')"
+        @cancel="(req) => openConfirm(req, 'cancel')"
+      />
 
     </main>
 
@@ -249,8 +132,10 @@ import TravelFilters from '@/components/TravelFilters.vue';
 import Pagination from '@/components/Pagination.vue';
 import ViewDetailsModal from '@/components/ViewDetailsModal.vue';
 import BroadcastEmailModal from '@/components/BroadcastEmailModal.vue';
-import { Eye, Check, X, MapPin, Mail } from 'lucide-vue-next';
+import { Mail } from 'lucide-vue-next';
 import { travelService } from '@/services/travelService';
+import TravelRequestTable from '@/components/TravelRequestTable.vue';
+import TravelRequestMobileList from '@/components/TravelRequestMobileList.vue';
 
 const router = useRouter();
 const auth = useAuthStore();
@@ -310,29 +195,6 @@ const handleConfirmAction = async () => {
 const handleLogout = () => {
   auth.logout();
   router.push('/login');
-};
-
-/**
- * Formatadores e Helpers de UI
- */
-const formatDate = (date: string) => {
-  if (!date) return '---';
-  // A API agora retorna dd/mm/yyyy string, ou null. 
-  // Se for string dd/mm/yyyy não precisa de new Date(). 
-  // Mas como estamos no transition, vamos verificar.
-  // Se vier no formato ISO do backend, converte. Se vier formatado, exibe.
-  // Pela refatoração do backend API Resource, JÁ VEM 'dd/mm/yyyy'.
-  return date; 
-};
-
-const statusClass = (status: string | undefined) => {
-  const base = "border border-current transition-all";
-  switch(status) {
-    case 'aprovado': return `${base} bg-success-50 text-success-600 border-success-200`;
-    case 'cancelado': return `${base} bg-secondary-50 text-secondary-600 border-secondary-200`;
-    case 'solicitado': return `${base} bg-warning-50 text-warning-600 border-warning-200`;
-    default: return 'bg-neutral-100 text-neutral-500 border-neutral-200';
-  }
 };
 
 const handleBroadcastSend = (payload: { subject: string, body: string }) => {
