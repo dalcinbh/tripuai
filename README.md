@@ -117,7 +117,7 @@ Dessa forma, o worker irá iniciar normalmente.
 ## 👤 Credenciais de Acesso (Seeders)
 
 - **Administrador:** `admin@tripuai.com.br` | Senha: `password`
-- **Colaborador:** `user@tripuai.com.br` | Senha: `password`
+- **Cliente:** `joao@tripuai.com.br` | Senha: `password`
 
 ---
 
