@@ -11,8 +11,14 @@ onMounted(() => {
   }
 });
 
+import AppFooter from '@/components/AppFooter.vue';
 </script>
 
 <template>
-  <router-view />
+  <div class="min-h-screen flex flex-col font-sans bg-neutral-50 text-neutral-900">
+    <div class="flex-grow w-full">
+      <router-view />
+    </div>
+    <AppFooter />
+  </div>
 </template>
