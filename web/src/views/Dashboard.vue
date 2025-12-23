@@ -240,9 +240,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
-import { travelService } from '@/services/travelService';
 import { useRouter } from 'vue-router';
 import { toast } from 'vue3-toastify';
+import { useTravelRequests, type TravelRequest } from '@/composables/useTravelRequests';
 import RequestModal from '@/components/RequestModal.vue';
 import ConfirmModal from '@/components/ConfirmModal.vue';
 import TravelFilters from '@/components/TravelFilters.vue';
@@ -250,31 +250,13 @@ import Pagination from '@/components/Pagination.vue';
 import ViewDetailsModal from '@/components/ViewDetailsModal.vue';
 import BroadcastEmailModal from '@/components/BroadcastEmailModal.vue';
 import { Eye, Check, X, MapPin, Mail } from 'lucide-vue-next';
-
-/** * Tipagem e Estado 
- */
-interface TravelRequest {
-  id: number;
-  destination: string;
-  departure_date: string;
-  return_date: string;
-  status: 'solicitado' | 'aprovado' | 'cancelado';
-  requester_name: string;
-}
+import { travelService } from '@/services/travelService';
 
 const router = useRouter();
 const auth = useAuthStore();
+const { requests, loading, pagination, loadRequests, handleFilterChange, approve, cancel } = useTravelRequests();
+
 const isModalOpen = ref(false);
-const requests = ref<TravelRequest[]>([]);
-const loading = ref(true);
-const currentFilters = ref({});
-const pagination = ref({ 
-  current_page: 1, 
-  last_page: 1, 
-  from: 0, 
-  to: 0, 
-  total: 0 
-});
 
 // Estado para o Modal de Confirmação
 const isConfirmOpen = ref(false);
@@ -293,37 +275,9 @@ const viewModalRequest = ref<any>({});
 // Estado para o Modal de Email Broadcast
 const isBroadcastModalOpen = ref(false);
 
-/**
- * Lógica de Negócio
- */
-const loadRequests = async (page = 1) => {
-  try {
-    loading.value = true;
-    // Passa os filtros capturados para o serviço + página
-    const response = await travelService.getAll({ ...currentFilters.value, page });
-    requests.value = response.data; 
-    pagination.value = {
-      current_page: response.current_page,
-      last_page: response.last_page,
-      from: response.from,
-      to: response.to,
-      total: response.total
-    };
-  } catch (error) {
-    toast.error('Erro ao carregar pedidos.');
-  } finally {
-    loading.value = false;
-  }
-};
-
-const handleFilterChange = (newFilters: any) => {
-  currentFilters.value = newFilters;
-  loadRequests(1); // Reset para página 1 ao filtrar
-};
-
 const handleSuccess = () => {
   isModalOpen.value = false;
-  loadRequests(pagination.value.current_page); // Recarrega na página atual
+  loadRequests(pagination.value.current_page);
 };
 
 const openConfirm = (request: TravelRequest, type: 'approve' | 'cancel') => {
@@ -353,26 +307,6 @@ const handleConfirmAction = async () => {
   }
 };
 
-const approve = async (id: number) => {
-  try {
-    await travelService.approve(id);
-    toast.success('Viagem aprovada com sucesso!');
-    await loadRequests(pagination.value.current_page);
-  } catch (e) {
-    toast.error('Erro ao aprovar viagem.');
-  }
-};
-
-const cancel = async (id: number) => {
-  try {
-    await travelService.cancel(id);
-    toast.success('Viagem cancelada.');
-    await loadRequests(pagination.value.current_page);
-  } catch (e) {
-    toast.error('Erro ao cancelar viagem.');
-  }
-};
-
 const handleLogout = () => {
   auth.logout();
   router.push('/login');
@@ -383,7 +317,12 @@ const handleLogout = () => {
  */
 const formatDate = (date: string) => {
   if (!date) return '---';
-  return new Date(date).toLocaleDateString('pt-BR');
+  // A API agora retorna dd/mm/yyyy string, ou null. 
+  // Se for string dd/mm/yyyy não precisa de new Date(). 
+  // Mas como estamos no transition, vamos verificar.
+  // Se vier no formato ISO do backend, converte. Se vier formatado, exibe.
+  // Pela refatoração do backend API Resource, JÁ VEM 'dd/mm/yyyy'.
+  return date; 
 };
 
 const statusClass = (status: string | undefined) => {
@@ -398,16 +337,13 @@ const statusClass = (status: string | undefined) => {
 
 const handleBroadcastSend = (payload: { subject: string, body: string }) => {
   isBroadcastModalOpen.value = false;
-  // Reutilizando o modal de confirmação para confirmar o envio
   confirmData.value = {
-    id: 0, // ID fictício pois não é uma ação num item específico
-    type: 'broadcast', // Novo tipo
+    id: 0, 
+    type: 'broadcast', 
     title: 'Enviar Mensagem para Todos',
     message: 'Tem certeza que deseja enviar este e-mail para TODOS os usuários do sistema?',
     variant: 'success'
   };
-  // Armazena payload temporariamente (poderia ser num ref separado, mas por simplicidade vamos assumir aqui ou estender confirmData se necessário. 
-  // Na verdade, melhor criar um ref separado para o payload pendente)
   pendingBroadcastPayload.value = payload;
   isConfirmOpen.value = true;
 };
@@ -421,7 +357,7 @@ const confirmBroadcast = async () => {
     await travelService.sendBroadcast(pendingBroadcastPayload.value);
     
     toast.success('Envio processando em segundo plano.');
-    pendingBroadcastPayload.value = null; // Limpa payload
+    pendingBroadcastPayload.value = null; 
   } catch (error) {
     toast.error('Erro ao enviar mensagem.');
   }
