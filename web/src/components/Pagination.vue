@@ -1,5 +1,5 @@
 <template>
-  <div v-if="meta.total > 0" class="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-b-xl">
+  <div v-if="meta.total > 0" class="flex items-center justify-between border border-neutral-200 bg-white px-4 py-3 sm:px-6 mb-4 rounded-xl shadow-sm">
     <div class="flex flex-1 justify-between sm:hidden">
       <button 
         @click="changePage(meta.current_page - 1)" 

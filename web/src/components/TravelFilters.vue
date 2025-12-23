@@ -26,7 +26,7 @@ const clearFilters = () => {
 
 <template>
   <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
       <div class="flex flex-col gap-1">
         <label class="text-xs font-black text-neutral-500 uppercase tracking-widest">Destino</label>
         <input 

@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-neutral-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-[95%] sm:w-full sm:max-w-lg overflow-hidden border border-neutral-200">
       <div class="px-6 py-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50">
         <h3 class="text-xl font-bold text-neutral-900">Detalhes da Viagem</h3>
         <button @click="emit('close')" class="text-neutral-400 hover:text-neutral-600 text-2xl">&times;</button>

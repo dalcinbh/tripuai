@@ -1,6 +1,6 @@
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-neutral-200 animate-in fade-in zoom-in duration-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-[95%] sm:w-full sm:max-w-sm p-6 border border-neutral-200 animate-in fade-in zoom-in duration-200">
       <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full" :class="variant === 'danger' ? 'bg-secondary-50' : 'bg-success-50'">
         <span class="text-2xl" :class="variant === 'danger' ? 'text-secondary-600' : 'text-success-600'">
           {{ variant === 'danger' ? '✕' : '✓' }}

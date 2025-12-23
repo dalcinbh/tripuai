@@ -5,9 +5,9 @@
   </div>
 
   <div v-else class="min-h-screen bg-neutral-50 font-sans">
-    <nav class="bg-white shadow-sm border-b border-neutral-200 sticky top-0 z-10">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <img src="@/assets/logo-tripuai.png" alt="TripUAI" class="h-12 w-auto" />
+    <nav class="bg-white shadow-sm border-b border-neutral-200 sticky top-0 z-10 transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 lg:py-0 min-h-[64px] lg:h-16 flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-0">
+        <img src="@/assets/logo-tripuai.png" alt="TripUAI" class="h-8 lg:h-12 w-auto transition-all" />
         
         <div class="flex items-center gap-6">
           <div v-if="auth.user" class="flex items-center gap-3">
@@ -27,7 +27,7 @@
     </nav>
 
     <main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div class="mb-8 flex justify-between items-end">
+      <div class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 lg:gap-0">
         <div>
           <h1 class="text-3xl font-extrabold text-neutral-900 tracking-tight">Solicitações de Viagem</h1>
           <p class="text-neutral-500 mt-1">Gerencie e acompanhe seus pedidos de deslocamento corporativo.</p>
@@ -56,7 +56,71 @@
         <span class="text-neutral-500 font-bold italic text-lg">Aguarde...</span>
       </div>
 
-      <div class="bg-white shadow-xl shadow-neutral-200/50 rounded-xl overflow-hidden border border-neutral-200">
+      <Pagination 
+        :meta="pagination"
+        @change-page="loadRequests"
+      />
+
+      <!-- Mobile Card View (Visible < lg) -->
+      <div class="block lg:hidden space-y-4 mb-6">
+        <div v-for="request in requests" :key="request.id" class="bg-white p-5 rounded-xl shadow-sm border border-neutral-200">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Solicitante</span>
+              <p class="font-bold text-neutral-900 text-sm">{{ request.requester_name || '---' }}</p>
+            </div>
+            <span :class="statusClass(request.status)" class="px-2 py-1 text-[10px] font-black rounded uppercase">
+              {{ request.status === 'solicitado' ? 'Solicitado' : (request.status === 'aprovado' ? 'Aprovado' : 'Cancelado') }}
+            </span>
+          </div>
+
+          <div class="mb-4">
+            <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Destino</span>
+            <div class="flex items-center gap-1 text-sm text-neutral-700 font-medium">
+               <MapPin class="w-4 h-4 text-primary-500 flex-shrink-0" />
+               {{ request.destination }}
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <span class="text-[10px] font-black text-neutral-400 uppercase tracking-widest block mb-1">Período</span>
+            <p class="text-sm text-neutral-600 font-medium">
+              {{ formatDate(request.departure_date) }} <span class="text-neutral-300 mx-1">→</span> {{ formatDate(request.return_date) }}
+            </p>
+          </div>
+
+          <div class="pt-4 border-t border-neutral-100 flex items-center justify-end gap-3">
+             <button 
+                @click="openViewModal(request)" 
+                class="flex items-center gap-2 px-3 py-2 bg-primary-50 text-primary-700 rounded-lg text-xs font-bold hover:bg-primary-100 transition-colors"
+             >
+               <Eye class="w-4 h-4" /> Detalhes
+             </button>
+
+             <template v-if="auth.isAdmin && request.status === 'solicitado'">
+               <button 
+                  @click="openConfirm(request, 'approve')" 
+                  class="flex items-center gap-2 px-3 py-2 bg-success-50 text-success-700 rounded-lg text-xs font-bold hover:bg-success-100 transition-colors"
+                >
+                  <Check class="w-4 h-4" /> Aprovar
+               </button>
+               <button 
+                  @click="openConfirm(request, 'cancel')" 
+                  class="flex items-center gap-2 px-3 py-2 bg-secondary-50 text-secondary-700 rounded-lg text-xs font-bold hover:bg-secondary-100 transition-colors"
+                >
+                  <X class="w-4 h-4" /> Recusar
+               </button>
+             </template>
+          </div>
+        </div>
+        
+        <div v-if="requests.length === 0 && !loading" class="text-center py-8 text-neutral-400 italic bg-white rounded-xl border border-neutral-200">
+           Nenhuma solicitação encontrada.
+        </div>
+      </div>
+
+      <!-- Desktop Table View (Visible >= lg) -->
+      <div class="hidden lg:block bg-white shadow-xl shadow-neutral-200/50 rounded-xl overflow-hidden border border-neutral-200">
         <table class="min-w-full divide-y divide-neutral-200">
           <thead class="bg-neutral-50">
             <tr>
@@ -131,11 +195,9 @@
             </tr>
           </tbody>
         </table>
-        <Pagination 
-          :meta="pagination"
-          @change-page="loadRequests"
-        />
       </div>
+
+
     </main>
 
     <RequestModal 
