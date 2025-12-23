@@ -104,13 +104,13 @@ Dessa forma, o worker irá iniciar normalmente.
 
 ## 🔗 Endereços das Ferramentas de Apoio
 
-| Serviço        | Endereço                                                                                                           | Descrição                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
-| **Frontend**   | [http://localhost:5173](https://www.google.com/search?q=http://localhost:5173)                                     | Interface do usuário (Vue 3).               |
-| **Swagger UI** | [http://localhost:8000/api/documentation](https://www.google.com/search?q=http://localhost:8000/api/documentation) | Documentação interativa da API.             |
-| **MailDev**    | [http://localhost:1080](https://www.google.com/search?q=http://localhost:1080)                                     | Interface para visualizar e-mails enviados. |
-| **phpMyAdmin** | [http://localhost:8081](https://www.google.com/search?q=http://localhost:8081)                                     | Gestão visual do banco de dados MySQL.      |
-| **RabbitMQ**   | [http://localhost:15672](https://www.google.com/search?q=http://localhost:15672)                                   | Dashboard de filas (guest / guest).         |
+| Serviço        | Endereço                                                                           | Descrição                                   |
+| -------------- | ---------------------------------------------------------------------------------- | ------------------------------------------- |
+| **Frontend**   | [http://localhost:5173](http://localhost:5173)                                     | Interface do usuário (Vue 3).               |
+| **Swagger UI** | [http://localhost:8000/api/documentation](http://localhost:8000/api/documentation) | Documentação interativa da API.             |
+| **MailDev**    | [http://localhost:1080](http://localhost:1080)                                     | Interface para visualizar e-mails enviados. |
+| **phpMyAdmin** | [http://localhost:8081](http://localhost:8081)                                     | Gestão visual do banco de dados MySQL.      |
+| **RabbitMQ**   | [http://localhost:15672](http://localhost:15672)                                   | Dashboard de filas (guest / guest).         |
 
 ---
 
