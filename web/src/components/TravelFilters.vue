@@ -26,7 +26,7 @@ const clearFilters = () => {
 
 <template>
   <div class="bg-white p-6 rounded-xl border border-neutral-200 shadow-sm mb-6">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-end">
       <div class="flex flex-col gap-1">
         <label class="text-xs font-black text-neutral-500 uppercase tracking-widest">Destino</label>
         <input 
@@ -62,7 +62,7 @@ const clearFilters = () => {
       <div class="flex items-center gap-2">
         <button 
           @click="handleSearch" 
-          class="flex-1 bg-neutral-900 text-white px-4 py-2.5 rounded-lg font-bold text-sm hover:bg-neutral-800 transition-all flex items-center justify-center gap-2"
+          class="flex-1 bg-rose-600 text-white px-4 py-2.5 rounded-lg font-bold text-sm hover:bg-rose-700 transition-all flex items-center justify-center gap-2 shadow-sm shadow-rose-200"
         >
           🔍 Filtrar
         </button>
