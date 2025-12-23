@@ -66,7 +66,7 @@
 
       <Pagination 
         :meta="pagination"
-        @change-page="loadRequests"
+        @change-page="fetchRequests"
       />
 
       <!-- Mobile Card View (Visible < lg) -->
@@ -254,7 +254,7 @@ import { travelService } from '@/services/travelService';
 
 const router = useRouter();
 const auth = useAuthStore();
-const { requests, loading, pagination, loadRequests, handleFilterChange, approve, cancel } = useTravelRequests();
+const { requests, loading, pagination, fetchRequests, handleFilterChange, approveRequest, cancelRequest } = useTravelRequests();
 
 const isModalOpen = ref(false);
 
@@ -277,7 +277,7 @@ const isBroadcastModalOpen = ref(false);
 
 const handleSuccess = () => {
   isModalOpen.value = false;
-  loadRequests(pagination.value.current_page);
+  fetchRequests(pagination.value.current_page);
 };
 
 const openConfirm = (request: TravelRequest, type: 'approve' | 'cancel') => {
@@ -301,9 +301,9 @@ const handleConfirmAction = async () => {
   if (confirmData.value.type === 'broadcast') {
     await confirmBroadcast();
   } else if (confirmData.value.type === 'approve') {
-    await approve(confirmData.value.id);
+    await approveRequest(confirmData.value.id);
   } else {
-    await cancel(confirmData.value.id);
+    await cancelRequest(confirmData.value.id);
   }
 };
 
@@ -365,6 +365,6 @@ const confirmBroadcast = async () => {
 
 onMounted(async () => {
   await auth.getUser(); 
-  loadRequests();
+  fetchRequests();
 });
 </script>

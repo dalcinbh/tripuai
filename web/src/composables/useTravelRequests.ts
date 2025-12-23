@@ -14,7 +14,7 @@ export interface TravelRequest {
 export function useTravelRequests() {
   const requests = ref<TravelRequest[]>([]);
   const loading = ref(false);
-  const currentFilters = ref({});
+  const filters = ref({});
   const pagination = ref({ 
     current_page: 1, 
     last_page: 1, 
@@ -23,10 +23,10 @@ export function useTravelRequests() {
     total: 0 
   });
 
-  const loadRequests = async (page = 1) => {
+  const fetchRequests = async (page = 1) => {
     try {
       loading.value = true;
-      const response = await travelService.getAll({ ...currentFilters.value, page });
+      const response = await travelService.getAll({ ...filters.value, page });
       requests.value = response.data; 
       pagination.value = {
         current_page: response.meta?.current_page || response.current_page,
@@ -43,25 +43,25 @@ export function useTravelRequests() {
   };
 
   const handleFilterChange = (newFilters: any) => {
-    currentFilters.value = newFilters;
-    loadRequests(1);
+    filters.value = newFilters;
+    fetchRequests(1);
   };
 
-  const approve = async (id: number) => {
+  const approveRequest = async (id: number) => {
     try {
       await travelService.approve(id);
       toast.success('Viagem aprovada com sucesso!');
-      await loadRequests(pagination.value.current_page);
+      await fetchRequests(pagination.value.current_page);
     } catch (e) {
       toast.error('Erro ao aprovar viagem.');
     }
   };
 
-  const cancel = async (id: number) => {
+  const cancelRequest = async (id: number) => {
     try {
       await travelService.cancel(id);
       toast.success('Viagem cancelada.');
-      await loadRequests(pagination.value.current_page);
+      await fetchRequests(pagination.value.current_page);
     } catch (e) {
       toast.error('Erro ao cancelar viagem.');
     }
@@ -70,10 +70,11 @@ export function useTravelRequests() {
   return {
     requests,
     loading,
+    filters,
     pagination,
-    loadRequests,
+    fetchRequests,
     handleFilterChange,
-    approve,
-    cancel
+    approveRequest,
+    cancelRequest
   };
 }
