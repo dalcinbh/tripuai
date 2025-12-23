@@ -1,0 +1,112 @@
+diff --git a/.gitignore b/.gitignore
+index 4f7a0b5..5ade0d3 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,3 +1,2 @@
+ .env
+-DEVELOPMENT_PLAN.md
+ .cursorrules
+\ No newline at end of file
+diff --git a/web/src/components/TravelRequestMobileList.vue b/web/src/components/TravelRequestMobileList.vue
+index f2ff016..be2860f 100644
+--- a/web/src/components/TravelRequestMobileList.vue
++++ b/web/src/components/TravelRequestMobileList.vue
+@@ -60,7 +60,8 @@
+ <script setup lang="ts">
+ import { PropType } from 'vue';
+ import { Eye, Check, X, MapPin } from 'lucide-vue-next';
+-import type { TravelRequest } from '@/composables/useTravelRequests';
++import type { TravelRequest } from '@/types/TravelRequest';
++import { formatDate, statusClass } from '@/utils/formatters';
+ 
+ defineProps({
+   requests: {
+@@ -78,19 +79,4 @@ defineProps({
+ });
+ 
+ const emit = defineEmits(['view', 'approve', 'cancel']);
+-
+-const formatDate = (date: string) => {
+-  if (!date) return '---';
+-  return date;
+-};
+-
+-const statusClass = (status: string | undefined) => {
+-  const base = "border border-current transition-all";
+-  switch(status) {
+-    case 'aprovado': return `${base} bg-success-50 text-success-600 border-success-200`;
+-    case 'cancelado': return `${base} bg-secondary-50 text-secondary-600 border-secondary-200`;
+-    case 'solicitado': return `${base} bg-warning-50 text-warning-600 border-warning-200`;
+-    default: return 'bg-neutral-100 text-neutral-500 border-neutral-200';
+-  }
+-};
+ </script>
+diff --git a/web/src/components/TravelRequestTable.vue b/web/src/components/TravelRequestTable.vue
+index 3598c2a..1225ef6 100644
+--- a/web/src/components/TravelRequestTable.vue
++++ b/web/src/components/TravelRequestTable.vue
+@@ -80,7 +80,8 @@
+ <script setup lang="ts">
+ import { PropType } from 'vue';
+ import { Eye, Check, X, MapPin } from 'lucide-vue-next';
+-import type { TravelRequest } from '@/composables/useTravelRequests';
++import type { TravelRequest } from '@/types/TravelRequest';
++import { formatDate, statusClass } from '@/utils/formatters';
+ 
+ defineProps({
+   requests: {
+@@ -98,19 +99,4 @@ defineProps({
+ });
+ 
+ const emit = defineEmits(['view', 'approve', 'cancel']);
+-
+-const formatDate = (date: string) => {
+-  if (!date) return '---';
+-  return date;
+-};
+-
+-const statusClass = (status: string | undefined) => {
+-  const base = "border border-current transition-all";
+-  switch(status) {
+-    case 'aprovado': return `${base} bg-success-50 text-success-600 border-success-200`;
+-    case 'cancelado': return `${base} bg-secondary-50 text-secondary-600 border-secondary-200`;
+-    case 'solicitado': return `${base} bg-warning-50 text-warning-600 border-warning-200`;
+-    default: return 'bg-neutral-100 text-neutral-500 border-neutral-200';
+-  }
+-};
+ </script>
+diff --git a/web/src/composables/useTravelRequests.ts b/web/src/composables/useTravelRequests.ts
+index 5882275..1f353f2 100644
+--- a/web/src/composables/useTravelRequests.ts
++++ b/web/src/composables/useTravelRequests.ts
+@@ -1,15 +1,7 @@
+ import { ref } from 'vue';
+ import { travelService } from '@/services/travelService';
+ import { toast } from 'vue3-toastify';
+-
+-export interface TravelRequest {
+-  id: number;
+-  destination: string;
+-  departure_date: string;
+-  return_date: string;
+-  status: 'solicitado' | 'aprovado' | 'cancelado';
+-  requester_name: string;
+-}
++import type { TravelRequest } from '@/types/TravelRequest';
+ 
+ export function useTravelRequests() {
+   const requests = ref<TravelRequest[]>([]);
+diff --git a/web/src/views/Dashboard.vue b/web/src/views/Dashboard.vue
+index ce910ad..52af9be 100644
+--- a/web/src/views/Dashboard.vue
++++ b/web/src/views/Dashboard.vue
+@@ -125,7 +125,8 @@ import { ref, onMounted } from 'vue';
+ import { useAuthStore } from '@/stores/auth';
+ import { useRouter } from 'vue-router';
+ import { toast } from 'vue3-toastify';
+-import { useTravelRequests, type TravelRequest } from '@/composables/useTravelRequests';
++import { useTravelRequests } from '@/composables/useTravelRequests';
++import type { TravelRequest } from '@/types/TravelRequest';
+ import RequestModal from '@/components/RequestModal.vue';
+ import ConfirmModal from '@/components/ConfirmModal.vue';
+ import TravelFilters from '@/components/TravelFilters.vue';

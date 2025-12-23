@@ -1,15 +1,7 @@
 import { ref } from 'vue';
 import { travelService } from '@/services/travelService';
 import { toast } from 'vue3-toastify';
-
-export interface TravelRequest {
-  id: number;
-  destination: string;
-  departure_date: string;
-  return_date: string;
-  status: 'solicitado' | 'aprovado' | 'cancelado';
-  requester_name: string;
-}
+import type { TravelRequest } from '@/types/TravelRequest';
 
 export function useTravelRequests() {
   const requests = ref<TravelRequest[]>([]);
