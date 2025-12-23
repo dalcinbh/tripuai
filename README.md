@@ -102,7 +102,25 @@ Dessa forma, o worker irá iniciar normalmente.
 
 ---
 
-## 🔗 Endereços das Ferramentas de Apoio
+### 5 Rodar os Testes
+
+Para rodar os testes, execute o comando abaixo:
+
+```bash
+docker exec -it tripuai-api php artisan test
+```
+
+ou
+
+Se o PHP (8.3+), o composer, o Sqllite estiverem instalados em sua máquina local, você pode executar os comandos abaixo para instalar as dependências e preparar o banco de dados:
+
+```bash
+php artisan test
+```
+
+---
+
+### 🔗 Endereços das Ferramentas de Apoio
 
 | Serviço        | Endereço                                                                           | Descrição                                   |
 | -------------- | ---------------------------------------------------------------------------------- | ------------------------------------------- |
