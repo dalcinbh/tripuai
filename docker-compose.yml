@@ -1,85 +1,119 @@
 services:
-    # Back-end: API REST Laravel
-    tripuai-api:
-      image: 'sail-8.3/app'
-      build:
-          context: ./api/vendor/laravel/sail/runtimes/8.3 # Caminho corrigido para dentro de /api
-          dockerfile: Dockerfile
-          args:
-              WWWGROUP: '${WWWGROUP:-1000}'
-      container_name: tripuai-api
-      ports:
-          - '${APP_PORT:-8000}:80'
-      environment:
-          WWWUSER: '${WWWUSER:-1000}'
-          LARAVEL_SAIL: 1
-          DB_HOST: tripuai-db
-      volumes:
-          - './api:/var/www/html'
-      networks:
-          - tripuai-network
-      depends_on:
-          - tripuai-db
+  # Back-end: API REST Laravel
+  tripuai-api:
+    image: "sail-8.3/app"
+    build:
+      context: ./api/vendor/laravel/sail/runtimes/8.3 # Caminho corrigido para dentro de /api
+      dockerfile: Dockerfile
+      args:
+        WWWGROUP: "${WWWGROUP:-1000}"
+    container_name: tripuai-api
+    ports:
+      - "${APP_PORT:-8000}:80"
+    environment:
+      WWWUSER: "${WWWUSER:-1000}"
+      LARAVEL_SAIL: 1
+      DB_HOST: tripuai-db
+    volumes:
+      - "./api:/var/www/html"
+    networks:
+      - tripuai-network
+    depends_on:
+      - tripuai-db
 
-    # Front-end: Vue.js SPA
-    tripuai-web:
-        image: node:20-slim
-        container_name: tripuai-web
-        working_dir: /app
-        ports:
-            - '5173:5173'
-        volumes:
-            - './web:/app'
-        command: sh -c "npm install && npm run dev -- --host"
-        networks:
-            - tripuai-network
+  tripuai-worker:
+    image: "sail-8.3/app"
+    build:
+      context: ./api/vendor/laravel/sail/runtimes/8.3
+      dockerfile: Dockerfile
+      args:
+        WWWGROUP: "${WWWGROUP:-1000}"
+    container_name: tripuai-worker
+    command: "php artisan queue:work rabbitmq"
+    environment:
+      WWWUSER: "${WWWUSER:-1000}"
+      LARAVEL_SAIL: 1
+      DB_HOST: tripuai-db
+    volumes:
+      - "./api:/var/www/html"
+    networks:
+      - tripuai-network
+    depends_on:
+      - tripuai-db
+      - tripuai-rabbitmq
 
-    # Banco de Dados
-    tripuai-db:
-        image: 'mysql/mysql-server:8.0'
-        container_name: tripuai-db
-        ports:
-            - '${FORWARD_DB_PORT:-3306}:3306'
-        environment:
-            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_DATABASE: '${DB_DATABASE}'
-            MYSQL_USER: '${DB_USERNAME}'
-            MYSQL_PASSWORD: '${DB_PASSWORD}'
-        volumes:
-            - 'tripuai-mysql:/var/lib/mysql'
-        networks:
-            - tripuai-network
-# Interface Visual para o MySQL
-    tripuai-pma:
-        image: phpmyadmin/phpmyadmin
-        container_name: tripuai-pma
-        links:
-            - tripuai-db:db
-        ports:
-            - "8081:80"
-        environment:
-            PMA_HOST: tripuai-db
-            PMA_USER: ${DB_USERNAME}
-            PMA_PASSWORD: ${DB_PASSWORD}
-        networks:
-            - tripuai-network
-        depends_on:
-            - tripuai-db
+  # Front-end: Vue.js SPA
+  tripuai-web:
+    image: node:20-slim
+    container_name: tripuai-web
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - "./web:/app"
+    command: sh -c "npm install && npm run dev -- --host"
+    networks:
+      - tripuai-network
 
-    # MailDev para notificações
-    tripuai-mail:
-        image: maildev/maildev
-        container_name: tripuai-mail
-        ports:
-            - "1080:1080" # Interface Web
-            - "1025:1025" # SMTP
-        networks:
-            - tripuai-network
+  # Banco de Dados
+  tripuai-db:
+    image: "mysql/mysql-server:8.0"
+    container_name: tripuai-db
+    ports:
+      - "${FORWARD_DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DATABASE: "${DB_DATABASE}"
+      MYSQL_USER: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    volumes:
+      - "tripuai-mysql:/var/lib/mysql"
+    networks:
+      - tripuai-network
+  # Interface Visual para o MySQL
+  tripuai-pma:
+    image: phpmyadmin/phpmyadmin
+    container_name: tripuai-pma
+    links:
+      - tripuai-db:db
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: tripuai-db
+      PMA_USER: ${DB_USERNAME}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - tripuai-network
+    depends_on:
+      - tripuai-db
+
+  # MailDev para notificações
+  tripuai-mail:
+    image: maildev/maildev
+    container_name: tripuai-mail
+    ports:
+      - "1080:1080" # Interface Web
+      - "1025:1025" # SMTP
+    networks:
+      - tripuai-network
+
+  # RabbitMQ para mensageria assíncrona
+  tripuai-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: tripuai-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - tripuai-network
 
 networks:
-    tripuai-network:
-        driver: bridge
+  tripuai-network:
+    driver: bridge
 
 volumes:
-    tripuai-mysql:
-        driver: local
+  tripuai-mysql:
+    driver: local

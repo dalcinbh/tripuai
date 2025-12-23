@@ -23,5 +23,9 @@ export const travelService = {
   async cancel(id: number) {
     const response = await api.patch(`/travel-requests/${id}/cancel`);
     return response.data;
+  },
+  async sendBroadcast(data: { subject: string, body: string }) {
+    const response = await api.post('/admin/broadcast', data);
+    return response.data;
   }
 };

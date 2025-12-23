@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TravelRequestController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmailController;
 
 Route::group(['prefix' => 'auth'], function () {
     Route::post('login', [AuthController::class, 'login']);
@@ -23,4 +24,6 @@ Route::middleware('auth:api')->group(function () {
         Route::patch('approve', [TravelRequestController::class, 'approveTravelRequest'])->name('travel-requests.approve');
         Route::patch('cancel', [TravelRequestController::class, 'cancelTravelRequest'])->name('travel-requests.cancel');
     });
+
+    Route::post('admin/broadcast', [EmailController::class, 'broadcast']);
 });

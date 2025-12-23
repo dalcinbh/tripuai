@@ -416,13 +416,11 @@ const pendingBroadcastPayload = ref<{ subject: string, body: string } | null>(nu
 
 const confirmBroadcast = async () => {
   try {
-    // AQUI SERIA A CHAMADA PARA A API: await travelService.sendBroadcast(pendingBroadcastPayload.value);
-    console.log('Sending broadcast:', pendingBroadcastPayload.value);
+    if (!pendingBroadcastPayload.value) return;
+
+    await travelService.sendBroadcast(pendingBroadcastPayload.value);
     
-    // Simulating API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    toast.success('Mensagem enviada com sucesso para todos os usuários!');
+    toast.success('Envio processando em segundo plano.');
     pendingBroadcastPayload.value = null; // Limpa payload
   } catch (error) {
     toast.error('Erro ao enviar mensagem.');
