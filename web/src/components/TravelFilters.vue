@@ -51,7 +51,7 @@ const clearFilters = () => {
       </div>
 
       <div class="flex flex-col gap-1 md:col-span-1">
-        <label class="text-xs font-black text-neutral-500 uppercase tracking-widest">Período (Início / Fim)</label>
+        <label class="text-xs font-black text-neutral-500 uppercase tracking-widest">Período (Ida / Volta)</label>
         <div class="flex items-center gap-2">
           <input v-model="filters.start_date" type="date" class="w-full px-2 py-2 rounded-lg border border-neutral-200 text-xs font-sans outline-none" />
           <span class="text-neutral-300">|</span>

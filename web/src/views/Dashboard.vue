@@ -12,11 +12,10 @@
         <div class="flex items-center gap-6">
           <div v-if="auth.user" class="flex items-center gap-3">
             <span v-if="auth.isAdmin" class="bg-primary-50 text-primary-700 text-[10px] tracking-wider font-bold px-2.5 py-0.5 rounded-full border border-primary-100">
-              ADMINISTRADOR
+              ADMIN
             </span>
             <div class="flex flex-col items-end">
               <span class="text-neutral-900 text-sm font-semibold leading-none">{{ auth.user?.name }}</span>
-              <span class="text-neutral-500 text-[11px]">{{ auth.user?.email }}</span>
             </div>
           </div>
           <button @click="handleLogout" class="text-secondary-600 hover:text-secondary-700 text-sm font-bold transition-colors">

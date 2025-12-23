@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { travelService } from '@/services/travelService';
 import { toast } from 'vue3-toastify';
 
@@ -88,6 +88,16 @@ const form = reactive({
   destination: '',
   departure_date: '',
   return_date: '',
+});
+
+// Reseta o formulário sempre que o modal for aberto
+watch(() => props.isOpen, (newVal) => {
+  if (newVal) {
+    form.requester_name = '';
+    form.destination = '';
+    form.departure_date = '';
+    form.return_date = '';
+  }
 });
 
 const handleSubmit = async () => {
